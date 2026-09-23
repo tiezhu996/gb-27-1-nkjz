@@ -14,7 +14,7 @@ export class AssignmentsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Request() req, @Body() data: any) {
-    return this.assignmentsService.create(req.user.id, data);
+    return this.assignmentsService.create(req.user.id, req.user.role, data);
   }
 
   @Get(':id')
@@ -25,7 +25,7 @@ export class AssignmentsController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/submit')
   submit(@Param('id') assignmentId: string, @Body() data: any, @Request() req) {
-    return this.assignmentsService.submit(req.user.id, assignmentId, data);
+    return this.assignmentsService.submit(req.user.id, req.user.role, assignmentId, data);
   }
 
   @UseGuards(JwtAuthGuard)

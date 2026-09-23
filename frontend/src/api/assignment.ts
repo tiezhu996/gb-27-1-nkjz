@@ -1,11 +1,21 @@
 import { api } from './index';
 import { Assignment, AssignmentSubmission } from '@/types/assignment';
 
+export interface ChoiceSubmitPayload {
+  choiceAnswers: number[];
+}
+
+export interface TextSubmitPayload {
+  textAnswer: string;
+}
+
+export type AssignmentSubmitPayload = Partial<ChoiceSubmitPayload & TextSubmitPayload>;
+
 export const assignmentApi = {
   list: (courseId: string) => api.get<Assignment[]>(`/assignments?courseId=${courseId}`).then(res => res.data),
   get: (id: string) => api.get<Assignment>(`/assignments/${id}`).then(res => res.data),
   create: (data: Partial<Assignment>) => api.post<Assignment>('/assignments', data).then(res => res.data),
-  submit: (assignmentId: string, data: Partial<AssignmentSubmission>) =>
+  submit: (assignmentId: string, data: AssignmentSubmitPayload) =>
     api.post<AssignmentSubmission>(`/assignments/${assignmentId}/submit`, data).then(res => res.data),
   getMySubmission: (assignmentId: string) =>
     api.get<AssignmentSubmission | null>(`/assignments/${assignmentId}/my-submission`).then(res => res.data),

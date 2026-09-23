@@ -33,6 +33,9 @@ export class AssignmentSubmission {
   @Column({ type: 'int', nullable: true })
   score: number;
 
+  @Column({ type: 'int', nullable: true })
+  correctCount: number;
+
   @Column({ type: 'text', nullable: true })
   feedback: string;
 

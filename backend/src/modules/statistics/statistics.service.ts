@@ -47,13 +47,21 @@ export class StatisticsService {
     const totalAssignments = await this.assignmentRepository.count({
       where: { teacherId },
     });
-    
-    const submissions = await this.submissionRepository.find({
-      where: { status: SubmissionStatus.GRADED },
+
+    const ownAssignments = await this.assignmentRepository.find({
+      where: { teacherId },
+      select: ['id'],
     });
-    
-    const avgScore = submissions.length > 0 
-      ? submissions.reduce((sum, s) => sum + (s.score || 0), 0) / submissions.length 
+    const ownAssignmentIds = ownAssignments.map(a => a.id);
+
+    const submissions = ownAssignmentIds.length > 0
+      ? await this.submissionRepository.find({
+          where: { assignmentId: In(ownAssignmentIds), status: SubmissionStatus.GRADED },
+        })
+      : [];
+
+    const avgScore = submissions.length > 0
+      ? submissions.reduce((sum, s) => sum + (s.score || 0), 0) / submissions.length
       : 0;
     
     return {

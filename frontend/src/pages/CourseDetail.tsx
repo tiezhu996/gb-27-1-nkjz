@@ -1,9 +1,11 @@
 import { Row, Col, Card, Typography, Tag, Button, Space, Descriptions, List, Avatar, message, Modal } from 'antd';
-import { PlayCircleOutlined, BookOutlined, EditOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, BookOutlined, EditOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { courseApi } from '@/api/course';
+import { assignmentApi } from '@/api/assignment';
 import { Course, CourseType, CourseLesson } from '@/types/course';
+import { Assignment, AssignmentType } from '@/types/assignment';
 import { useAuthStore } from '@/store/auth';
 import { UserRole } from '@/types/user';
 
@@ -13,6 +15,7 @@ export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrolled, setEnrolled] = useState(false);
   const { user, isAuthenticated } = useAuthStore();
@@ -29,6 +32,8 @@ export default function CourseDetail() {
     try {
       const data = await courseApi.get(id);
       setCourse(data);
+      const assignmentList = await assignmentApi.list(id);
+      setAssignments(assignmentList);
       if (isAuthenticated) {
         const enrollment = await courseApi.getEnrollment(id);
         setEnrolled(!!enrollment);
@@ -197,6 +202,67 @@ export default function CourseDetail() {
               />
             </List.Item>
           )}
+        />
+      </Card>
+
+      <Card
+        title="课程作业"
+        style={{ marginTop: 24 }}
+        extra={
+          isTeacher ? (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate(`/assignments/create?courseId=${id}`)}
+            >
+              发布作业
+            </Button>
+          ) : null
+        }
+      >
+        <List
+          itemLayout="horizontal"
+          dataSource={assignments}
+          locale={{ emptyText: '暂无作业' }}
+          renderItem={(assignment) => {
+            const closed = !!assignment.deadline && new Date(assignment.deadline).getTime() < Date.now();
+            const typeText = assignment.type === AssignmentType.CHOICE
+              ? '选择题'
+              : assignment.type === AssignmentType.ATTACHMENT
+                ? '附件提交'
+                : '文本题';
+            return (
+              <List.Item
+                actions={[
+                  <Button
+                    type="link"
+                    icon={<FileTextOutlined />}
+                    onClick={() => navigate(`/assignments/${assignment.id}`)}
+                  >
+                    {isTeacher ? '查看批改' : enrolled ? '进入作业' : '查看作业'}
+                  </Button>,
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <Space>
+                      {assignment.title}
+                      <Tag>{typeText}</Tag>
+                      {closed && <Tag color="red">已截止</Tag>}
+                    </Space>
+                  }
+                  description={
+                    <Space>
+                      <span>满分：{assignment.maxScore} 分</span>
+                      {assignment.deadline && (
+                        <span>截止：{new Date(assignment.deadline).toLocaleString()}</span>
+                      )}
+                    </Space>
+                  }
+                />
+              </List.Item>
+            );
+          }}
         />
       </Card>
     </div>

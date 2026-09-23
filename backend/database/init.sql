@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS assignment_submissions (
   attachment_urls TEXT[],
   status VARCHAR(20) NOT NULL DEFAULT 'submitted',
   score INT,
+  correct_count INT,
   feedback TEXT,
   graded_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
