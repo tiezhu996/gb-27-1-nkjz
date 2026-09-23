@@ -47,10 +47,17 @@ export class StatisticsService {
     const totalAssignments = await this.assignmentRepository.count({
       where: { teacherId },
     });
-    
-    const submissions = await this.submissionRepository.find({
-      where: { status: SubmissionStatus.GRADED },
-    });
+
+    // 平均分只统计本教师布置作业下的已批改（含选择题自动判分）提交
+    const submissions = courseIds.length > 0
+      ? await this.submissionRepository.find({
+          where: {
+            status: SubmissionStatus.GRADED,
+            assignment: { teacherId },
+          },
+          relations: ['assignment'],
+        })
+      : [];
     
     const avgScore = submissions.length > 0 
       ? submissions.reduce((sum, s) => sum + (s.score || 0), 0) / submissions.length 

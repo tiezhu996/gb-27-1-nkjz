@@ -1,9 +1,11 @@
 import { Row, Col, Card, Typography, Tag, Button, Space, Descriptions, List, Avatar, message, Modal } from 'antd';
-import { PlayCircleOutlined, BookOutlined, EditOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, BookOutlined, EditOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { courseApi } from '@/api/course';
+import { assignmentApi } from '@/api/assignment';
 import { Course, CourseType, CourseLesson } from '@/types/course';
+import { Assignment, AssignmentType } from '@/types/assignment';
 import { useAuthStore } from '@/store/auth';
 import { UserRole } from '@/types/user';
 
@@ -13,6 +15,7 @@ export default function CourseDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrolled, setEnrolled] = useState(false);
   const { user, isAuthenticated } = useAuthStore();
@@ -29,6 +32,8 @@ export default function CourseDetail() {
     try {
       const data = await courseApi.get(id);
       setCourse(data);
+      const assignmentList = await assignmentApi.list(id);
+      setAssignments(assignmentList);
       if (isAuthenticated) {
         const enrollment = await courseApi.getEnrollment(id);
         setEnrolled(!!enrollment);
@@ -197,6 +202,77 @@ export default function CourseDetail() {
               />
             </List.Item>
           )}
+        />
+      </Card>
+      <Card
+        title={
+          <Space>
+            <FileTextOutlined />
+            课程作业
+          </Space>
+        }
+        style={{ marginTop: 24 }}
+        extra={
+          isTeacher && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate(`/assignments/create?courseId=${course.id}`)}
+            >
+              发布作业
+            </Button>
+          )
+        }
+      >
+        <List
+          dataSource={assignments}
+          locale={{ emptyText: '暂无作业' }}
+          renderItem={(assignment) => {
+            const typeText =
+              assignment.type === AssignmentType.CHOICE
+                ? '选择题'
+                : assignment.type === AssignmentType.ATTACHMENT
+                  ? '附件作业'
+                  : '文本题';
+            const expired =
+              assignment.deadline && new Date(assignment.deadline).getTime() < Date.now();
+            return (
+              <List.Item
+                actions={[
+                  <Button
+                    type="link"
+                    onClick={() => navigate(`/assignments/${assignment.id}`)}
+                  >
+                    {isTeacher ? '查看/批改' : expired ? '查看详情' : '进入作业'}
+                  </Button>,
+                ]}
+              >
+                <List.Item.Meta
+                  avatar={<Avatar style={{ background: '#722ed1' }} icon={<FileTextOutlined />} />}
+                  title={
+                    <Space>
+                      {assignment.title}
+                      <Tag color={assignment.type === AssignmentType.CHOICE ? 'purple' : 'blue'}>
+                        {typeText}
+                      </Tag>
+                      {assignment.type === AssignmentType.CHOICE && (
+                        <Tag color="green">自动判分</Tag>
+                      )}
+                      {expired && <Tag color="red">已截止</Tag>}
+                    </Space>
+                  }
+                  description={
+                    <Space>
+                      <span>满分：{assignment.maxScore} 分</span>
+                      {assignment.deadline && (
+                        <span>截止：{new Date(assignment.deadline).toLocaleString()}</span>
+                      )}
+                    </Space>
+                  }
+                />
+              </List.Item>
+            );
+          }}
         />
       </Card>
     </div>

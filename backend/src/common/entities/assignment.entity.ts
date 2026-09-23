@@ -23,7 +23,7 @@ export class Assignment {
   @Column()
   courseId: string;
 
-  @Column()
+  @Column({ nullable: true })
   lessonId: string;
 
   @Column()

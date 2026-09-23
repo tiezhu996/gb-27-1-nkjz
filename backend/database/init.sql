@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS assignments (
   questions JSON,
   deadline TIMESTAMP,
   max_score INT NOT NULL DEFAULT 100,
+  lesson_id UUID REFERENCES course_lessons(id),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -100,6 +101,8 @@ CREATE TABLE IF NOT EXISTS assignment_submissions (
   attachment_urls TEXT[],
   status VARCHAR(20) NOT NULL DEFAULT 'submitted',
   score INT,
+  correct_count INT,
+  choice_results JSON,
   feedback TEXT,
   graded_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

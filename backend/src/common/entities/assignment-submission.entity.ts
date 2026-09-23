@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { Assignment } from './assignment.entity';
 import { User } from './user.entity';
 
@@ -8,6 +8,7 @@ export enum SubmissionStatus {
 }
 
 @Entity('assignment_submissions')
+@Unique('uq_submission_assignment_student', ['assignmentId', 'studentId'])
 export class AssignmentSubmission {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -32,6 +33,12 @@ export class AssignmentSubmission {
 
   @Column({ type: 'int', nullable: true })
   score: number;
+
+  @Column({ type: 'int', nullable: true })
+  correctCount: number;
+
+  @Column({ type: 'simple-json', nullable: true })
+  choiceResults: any;
 
   @Column({ type: 'text', nullable: true })
   feedback: string;

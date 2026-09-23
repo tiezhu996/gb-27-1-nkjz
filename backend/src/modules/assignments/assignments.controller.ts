@@ -25,7 +25,7 @@ export class AssignmentsController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/submit')
   submit(@Param('id') assignmentId: string, @Body() data: any, @Request() req) {
-    return this.assignmentsService.submit(req.user.id, assignmentId, data);
+    return this.assignmentsService.submit(req.user.id, req.user.role, assignmentId, data);
   }
 
   @UseGuards(JwtAuthGuard)

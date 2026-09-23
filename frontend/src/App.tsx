@@ -11,6 +11,7 @@ import MyCourses from './pages/MyCourses';
 import CreateCourse from './pages/CreateCourse';
 import LiveClass from './pages/LiveClass';
 import Assignment from './pages/Assignment';
+import CreateAssignment from './pages/CreateAssignment';
 import Statistics from './pages/Statistics';
 import { useAuthStore } from './store/auth';
 import { authApi } from './api/auth';
@@ -91,6 +92,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Assignment />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/assignments/create"
+                element={
+                  <PrivateRoute>
+                    <CreateAssignment />
                   </PrivateRoute>
                 }
               />
